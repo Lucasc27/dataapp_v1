@@ -1,0 +1,24 @@
+runtime: python
+#runtime: custom
+
+env: flex
+#entrypoint: gunicorn -b :$PORT main:app
+
+runtime_config:
+  python_version: 3
+
+manual_scaling:
+  instances: 1
+resources:
+  cpu: 2
+  memory_gb: 11.4
+  disk_size_gb: 40
+
+#automatic_scaling:
+#  min_num_instances: 3
+#  max_num_instances: 8
+
+#includes:
+#- env_vars.yaml
+
+entrypoint: streamlit run data_app.py --server.port 8080 --server.maxUploadSize 500
