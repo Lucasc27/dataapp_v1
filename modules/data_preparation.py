@@ -18,21 +18,32 @@ from streamlit_option_menu import option_menu
 
 def app():
 
-    # Atualizando as variáveis de sessão
-    list_to_objects = []
-    list_to_datasets = []
-    list_to_add = []
-    for item in st.session_state.keys():
-        if not type(st.session_state[item]) == bool:
-            if not item in ['Objects','dataset','appSelection','Variables']:
-                list_to_add.append(item)
+    # # Atualizando as variáveis de sessão
+    # list_to_objects = []
+    # list_to_datasets = []
+    # list_to_add = []
+    # for item in st.session_state.keys():
+    #     if not type(st.session_state[item]) == bool:
+    #         if not item in ['Objects','dataset','appSelection','Variables']:
+    #             list_to_add.append(item)
 
-    for item in list_to_add:
-        if not item in st.session_state['Objects']:
-            st.session_state['Objects'].append(item)
-    for item in list_to_add:
-        if not item in st.session_state['dataset'] and type(st.session_state[item]) == pd.DataFrame:
-            st.session_state['dataset'].append(item)
+    # for item in list_to_add:
+    #     if not item in st.session_state['Objects']:
+    #         if type(st.session_state[item]) == pd.DataFrame or type(st.session_state[item]) == list:
+    #             if len(st.session_state[item]) > 0:
+    #                 st.session_state['Objects'].append(item)
+    #                 list_to_objects.append(item)
+    # for item in list_to_add:
+    #     if not item in st.session_state['dataset'] and type(st.session_state[item]) == pd.DataFrame:
+    #         st.session_state['dataset'].append(item)
+    #         list_to_datasets.append(item)
+
+    # st.write(list(st.session_state.items()))
+    # st.write(list_to_add)
+    # st.write(list_to_objects)
+    # st.write(list_to_datasets)
+
+    
 
     appSelectionSubCat = option_menu('Select option', ['Home','Automated Pre-processing','Execute Script in Object', 'Execute Script in Session'], 
         icons=['house'], 
