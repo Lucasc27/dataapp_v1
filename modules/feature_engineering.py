@@ -542,7 +542,7 @@ def app():
                                     col1, col2 = st.columns([1.5,0.5])
                                     with col1:
                                         fig, ax = plt.subplots()
-                                        sns.barplot(x="Value", y="Feature", data=feature_imp.sort_values(by="Value", ascending=False).iloc[:int(qtd_features)], ax=ax)
+                                        sns.barplot(x="Value", y="Feature", data=feature_imp.sort_values(by="Value", ascending=False).iloc[:int(qtd_features)], ax=ax).set_title(name_model)
                                         #plt.title('Important Features')
                                         st.pyplot(fig)
                                         #fig = px.bar(feature_imp.sort_values(by="Value", ascending=False).iloc[:int(qtd_features)], x='Value', y='Feature', color='Value', orientation='h', title=name_model)

@@ -166,6 +166,7 @@ def app():
                             if variable_or_dataset_delete == 'Dataset':
                                 del st.session_state[SelectionToDelete]
                                 st.session_state['dataset'].remove(SelectionToDelete)
+                                st.session_state['Objects'].remove(SelectionToDelete)
                                 st.session_state['have_dataset'] = True if (len(st.session_state['dataset']) > 0) else False
                                 st.success('Dataset successfully deleted!')
                                 time.sleep(1)
@@ -173,6 +174,7 @@ def app():
                             if variable_or_dataset_delete == 'Variable':
                                 del st.session_state[SelectionToDelete]
                                 st.session_state['Variables'].remove(SelectionToDelete)
+                                st.session_state['Objects'].remove(SelectionToDelete)
                                 st.success('Dataset successfully deleted!')
                                 time.sleep(1)
                                 st.experimental_rerun()
@@ -487,7 +489,7 @@ def app():
                         if copy_dataset == 'copy':
                             if variable_or_dataset_rename == 'Dataset':
                                 if not optionObjects in st.session_state['dataset']:
-                                    st.session_state[optionObjects] = st.session_state[optionDataset]
+                                    st.session_state[optionObjects] = st.session_state[optionDataset].copy(deep=True)
                                     st.session_state['dataset'].append(optionObjects)
                                     st.success("Copy created successfully!")
                                     time.sleep(1)
@@ -571,7 +573,7 @@ def app():
                 @st.cache
                 def convert_df(df):
                     # IMPORTANT: Cache the conversion to prevent computation on every rerun
-                    return df.to_csv().encode('utf-8')
+                    return df.to_csv(index=False).encode('utf-8')
 
                 name_csv = st.text_input("Input the file name with the '.csv'", value=str(optionDataset) + '.csv')
 

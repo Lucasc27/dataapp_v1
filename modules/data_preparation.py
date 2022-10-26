@@ -18,7 +18,23 @@ from streamlit_option_menu import option_menu
 
 def app():
 
-    appSelectionSubCat = option_menu('Select option', ['Home','Automated Pre-processing','Execute Script .py'], 
+    # Atualizando as variáveis de sessão
+    list_to_objects = []
+    list_to_datasets = []
+    list_to_add = []
+    for item in st.session_state.keys():
+        if not type(st.session_state[item]) == bool:
+            if not item in ['Objects','dataset','appSelection','Variables']:
+                list_to_add.append(item)
+
+    for item in list_to_add:
+        if not item in st.session_state['Objects']:
+            st.session_state['Objects'].append(item)
+    for item in list_to_add:
+        if not item in st.session_state['dataset'] and type(st.session_state[item]) == pd.DataFrame:
+            st.session_state['dataset'].append(item)
+
+    appSelectionSubCat = option_menu('Select option', ['Home','Automated Pre-processing','Execute Script in Object', 'Execute Script in Session'], 
         icons=['house'], 
         menu_icon="bi bi-box-arrow-in-right", default_index=0, orientation="horizontal",
         styles={"container": {"padding": "1!important", "background-color": "#F9F7F7"},
@@ -63,7 +79,6 @@ def app():
             # ----------------------------- AQUI
             st.subheader("Select the type processing")
             # -----------------------------
-
             
             with st.expander("Remove special characters", expanded=False):
 
@@ -168,7 +183,7 @@ f'''self.base['{new_name_var}'] = self.base['{select_vars}']'''
 
                 col1_split_1, col2_split_1 = st.columns([2,3])
                 with col1_split_1:
-                    type_split = st.selectbox("Type of split", ['None','Simple split','Train and test data [train and test]','Train and test split [X_train, y_train, X_test, y_test]', 'Labels separation'])
+                    type_split = st.selectbox("Type of split", ['None','Simple split','Train and test data [train and test]','Train and test split [X_train, y_train, X_test, y_test]', 'Separation Column'])
 
                 if type_split == 'Simple split':
                     st.info("Separate part of the dataset")
@@ -258,18 +273,27 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size={size_test_s
                         st.write(f"{optionDataset} y test: {st.session_state[optionDataset+'_y_test'].shape[0]} lines and {st.session_state[optionDataset+'_y_test'].shape[1]} columns")
                         st.success('Successfully!')
 
-                elif type_split == 'Labels separation':
-                    st.info("Target variable separation")
+                elif type_split == 'Separation Column':
+                    st.info("Variable separation")
                     var_target_separation = st.selectbox("Input the target variable", options_columns)
+                    objs_to_save_separation = [obj for obj in st.session_state['Objects'] if obj not in st.session_state['dataset']]
+                    select_object_to_separation_save = st.selectbox("Select the object to save", objs_to_save_separation)
 
-                    submit_label_separation = st.button("Apply", key='submit_label_separation')
-                    if submit_label_separation:
+                    if var_target_separation != 'None' and select_object_to_separation_save:
 
-                        st.session_state[optionDataset+'_X'] = st.session_state[optionDataset].drop(var_target_separation,axis=1)
-                        st.session_state['dataset'].append(optionDataset+'_X')
-                        st.session_state[optionDataset+'_y'] = st.session_state[optionDataset][[var_target_separation]]
-                        st.session_state['dataset'].append(optionDataset+'_y')
-                        st.success('Successfully!')
+                        submit_label_separation = st.button("Apply", key='submit_label_separation')
+                        if submit_label_separation:
+
+                            st.session_state[select_object_to_separation_save] = st.session_state[optionDataset][[var_target_separation]]
+                            st.session_state['dataset'].append(select_object_to_separation_save)
+
+                            #st.session_state[optionDataset+'_X'] = st.session_state[optionDataset].drop(var_target_separation,axis=1)
+                            #st.session_state['dataset'].append(optionDataset+'_X')
+                            #st.session_state[optionDataset+'_y'] = st.session_state[optionDataset][[var_target_separation]]
+                            #st.session_state['dataset'].append(optionDataset+'_y')
+                            st.success('Successfully!')
+                            time.sleep(1.5)
+                            st.experimental_rerun()
 
             with st.expander("Filter dataset", expanded=False):
 
@@ -2250,10 +2274,9 @@ self.base = pd.concat([X_res, y_res],axis=1)'''
 
             st.write("There is no Dataset loaded")
             
-
     def appExecuteScript():
 
-        st.title('Execute script .py')
+        st.title('Execute script in object')
 
         with st.expander("Click here for more info on this app section", expanded=False):
 
@@ -2405,7 +2428,68 @@ self.base = pd.concat([X_res, y_res],axis=1)'''
             if show_me_descriptive:
                 st.dataframe(func_tab_final())
 
-        
+    def appExecuteScript_in_session():
+
+        st.title('Execute script in session')
+
+        with st.expander("Code in script", expanded=False):
+
+            button_update_code_script_3 = st.button("Refresh page", key='button_refreshpage_code_script_3')
+            if button_update_code_script_3:
+                st.experimental_rerun()
+            
+            with open("libs/script_to_run_out_2.py", "r") as f:
+                file_contents = f.read()
+
+            content = st_ace(file_contents,language='python', theme='pastel_on_dark')
+
+            col_code_script_1, col_code_script_2, col_code_script_3 = st.columns([0.6,1.2,1.2])
+            with col_code_script_1:
+                opt_code_script = st.selectbox("Select the option",['None','Save script','Reset script','Download script'])
+                if opt_code_script == 'Save script':
+                    button_code_save_script = st.button("Save", key='button_code_save_script_2')
+                    if button_code_save_script:
+                        file = open("libs/script_to_run_out_2.py", "w") 
+                        file.write(content)
+                        file.close()
+                        time.sleep(1)
+                        st.experimental_rerun()
+                elif opt_code_script == 'Download script':
+                    st.download_button(
+                        label="Download script",
+                        data=file_contents,
+                        file_name='script_to_run_out_2.py'
+                    )
+                elif opt_code_script == 'Reset script':
+                    button_code_reset_script = st.button("Reset", key='button_code_reset_script_3')
+                    if button_code_reset_script:
+                        with open("libs/script_to_run_out_2_backup.py", "r") as f:
+                            file_contents_backup = f.read()
+
+                        file = open("libs/script_to_run_out_2.py", "w") 
+                        file.write(file_contents_backup)
+                        file.close()
+                        time.sleep(1)
+                        st.experimental_rerun() 
+
+        with st.expander("Execute script", expanded=False): 
+
+            col_apply_code_1, col_apply_code_2 = st.columns([1,4])
+            with col_apply_code_1:
+                apply_select = st.selectbox("Execute?",['No','Yes'])
+
+            submit_script = st.button('Apply', key='submit_script_2')
+            if submit_script:
+                if apply_select == 'Yes':
+                    with st.spinner('Wait for it...'):
+                        import libs.script_to_run_out_2 as script_run_2
+                        script_run_2.main()
+                        time.sleep(1.5)
+                        st.success("Script executed successfully!")
+                        time.sleep(1)
+                        st.experimental_rerun()
+                else:
+                    st.warning("Choose the option to execute the script!")
 
     # -----------------------------------------------------------------------------------------------------------
 
@@ -2413,8 +2497,11 @@ self.base = pd.concat([X_res, y_res],axis=1)'''
     if appSelectionSubCat == 'Automated Pre-processing':
         appAutomatedPreProcessing()
 
-    elif appSelectionSubCat == 'Execute Script .py':
+    elif appSelectionSubCat == 'Execute Script in Object':
         appExecuteScript()
+
+    elif appSelectionSubCat == 'Execute Script in Session':
+        appExecuteScript_in_session()
 
     elif appSelectionSubCat == 'Home':
 
